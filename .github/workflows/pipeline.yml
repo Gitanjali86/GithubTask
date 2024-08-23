@@ -1,0 +1,68 @@
+name: Cypress Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:  # Enables manual triggering
+
+jobs:
+  cypress-tests:
+    runs-on: ubuntu-latest
+
+    env:
+      VALID_TOKEN: ${{ secrets.VALID_TOKEN }}
+      INVALID_TOKEN: ${{ secrets.INVALID_TOKEN }}
+      FORBIDDEN_TOKEN: ${{ secrets.FORBIDDEN_TOKEN }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Cache node_modules and Cypress binary
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            ~/.cache/Cypress
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Fix Cypress binary permissions
+        run: chmod +x ./node_modules/.bin/cypress
+
+      - name: Install Cypress
+        run: ./node_modules/.bin/cypress install
+
+      - name: Print Environment Variables
+        run: env
+
+      - name: List files and permissions
+        run: ls -la
+
+      - name: Check Cypress binary permissions
+        run: ls -la ./node_modules/.bin/cypress
+
+      - name: Verify Node.js, npm, and Cypress versions
+        run: |
+          node -v
+          npm -v
+          npx cypress --version
+
+      - name: Run Cypress tests
+        run: |
+          echo "Running Cypress tests"
+          npx cypress run --headless --browser chrome
+        shell: bash
