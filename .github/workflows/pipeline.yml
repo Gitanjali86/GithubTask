@@ -61,8 +61,12 @@ jobs:
           npm -v
           npx cypress --version
 
-      - name: Run Cypress tests
+      - name: Run Cypress Tests - Batch ${{ matrix.batch }}
         run: |
-          echo "Running Cypress tests"
-          npx cypress run --headless --browser chrome
+          echo "Running Cypress tests - Batch ${{ matrix.batch }}"
+          if [ ${{ matrix.batch }} -eq 1 ]; then
+            npx cypress run --spec "cypress/integration/tests1/*" --headless --browser chrome
+          elif [ ${{ matrix.batch }} -eq 2 ]; then
+            npx cypress run --spec "cypress/integration/tests2/*" --headless --browser chrome
+          fi
         shell: bash
