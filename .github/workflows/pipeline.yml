@@ -13,6 +13,16 @@ jobs:
   cypress-tests:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        spec: [
+          "cypress/e2e/no_token_provided_spec.js",
+          "cypress/e2e/invalid_token_spec.js",
+          "cypress/e2e/forbidden_access_spec.js",
+          "cypress/e2e/get_user_valid_token_spec.js",
+          "cypress/e2e/update_user_bio_spec.js"
+        ]  # List of test files to run in parallel
+    
     env:
       VALID_TOKEN: ${{ secrets.VALID_TOKEN }}
       INVALID_TOKEN: ${{ secrets.INVALID_TOKEN }}
@@ -46,27 +56,8 @@ jobs:
       - name: Install Cypress
         run: ./node_modules/.bin/cypress install
 
-      - name: Print Environment Variables
-        run: env
-
-      - name: List files and permissions
-        run: ls -la
-
-      - name: Check Cypress binary permissions
-        run: ls -la ./node_modules/.bin/cypress
-
-      - name: Verify Node.js, npm, and Cypress versions
+      - name: Run Cypress Tests - ${{ matrix.spec }}
         run: |
-          node -v
-          npm -v
-          npx cypress --version
-
-      - name: Run Cypress Tests - Batch ${{ matrix.batch }}
-        run: |
-          echo "Running Cypress tests - Batch ${{ matrix.batch }}"
-          if [ ${{ matrix.batch }} -eq 1 ]; then
-            npx cypress run --spec "cypress/integration/tests1/*" --headless --browser chrome
-          elif [ ${{ matrix.batch }} -eq 2 ]; then
-            npx cypress run --spec "cypress/integration/tests2/*" --headless --browser chrome
-          fi
+          echo "Running Cypress tests for ${{ matrix.spec }}"
+          npx cypress run --spec "${{ matrix.spec }}" --headless --browser chrome
         shell: bash
